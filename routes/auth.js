@@ -1,11 +1,19 @@
 // * getting express
 const express = require("express");
 
+// * to encrypt password
+const bcrypt = require("bcryptjs");
+
 // * getting user's schema to make query requests
 const User = require("../models/User");
 
 // * to do validations
 const { body, validationResult } = require("express-validator");
+
+// * for token
+const jwt = require("jsonwebtoken");
+
+const JWT_SECRET = "chiragJaniSecret01";
 
 // * to use router - not sure about this
 const router = express.Router();
@@ -40,17 +48,32 @@ router.post(
           .json({ error: "User with the same email exists" });
       }
 
+      // ! securing the password
+
+      // * generating salt
+      const salt = await bcrypt.genSalt(10);
+      let securePass = await bcrypt.hash(req.body.password, salt);
+
       // * creting new user
       user = await User.create({
         name: req.body.name,
         email: req.body.email,
-        password: req.body.password,
+        password: securePass,
       });
 
-      res.json(user);
+      // * creating token and sending
+      const data = {
+        user: {
+          id: user.id,
+        },
+      };
+      let authToken = jwt.sign(data, JWT_SECRET);
+
+      res.json({ authToken });
+      // res.json(user);
     } catch (err) {
       (err) => console.log(err);
-      res.status(500).send("Error occured");
+      res.status(500).json({ error: "Error occured" });
     }
   }
 );
