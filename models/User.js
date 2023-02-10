@@ -1,4 +1,4 @@
-// model for users
+// * model for users
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
@@ -21,4 +21,8 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("user", UserSchema);
+const User = mongoose.model("user", UserSchema);
+// * to create indexes
+// User.createIndexes();
+
+module.exports = User;

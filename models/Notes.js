@@ -1,4 +1,4 @@
-// model for notes
+// *  model for notes
 const mongoose = require("mongoose");
 
 const NotesSchema = new mongoose.Schema({
