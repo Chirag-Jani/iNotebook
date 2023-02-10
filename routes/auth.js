@@ -18,9 +18,9 @@ const JWT_SECRET = "chiragJaniSecret01";
 // * to use router - not sure about this
 const router = express.Router();
 
-// * to store data in data base (original query used in index.js is "/auth/register")
+// * to register new user in data base (original query used in index.js is "/auth/register")
 router.post(
-  "/",
+  "/register",
   [
     body("name", "Min length 3").isLength({ min: 3 }),
     body("email", "Email not valid").isEmail(),
@@ -72,8 +72,55 @@ router.post(
       res.json({ authToken });
       // res.json(user);
     } catch (err) {
-      (err) => console.log(err);
-      res.status(500).json({ error: "Error occured" });
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
+// * to authenticate/login user ("/auth/login")
+router.post(
+  "/login",
+  [
+    body("email", "Email not valid").isEmail(),
+    body("password", "Password can not be blank").exists(),
+  ],
+  async (req, res) => {
+    // * getting errors if any
+    const errors = validationResult(req);
+
+    // * handling errors
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        error: errors.array(),
+      });
+    }
+
+    // * getting data
+    const { email, password } = req.body;
+
+    try {
+      let user = await User.findOne({ email });
+      if (!user) {
+        res.status(400).json({ error: "Invalid Credentials" });
+      }
+
+      const passCompare = await bcrypt.compare(password, user.password);
+
+      if (!passCompare) {
+        res.status(400).json({ error: "Invalid Credentials" });
+      }
+
+      // * creating token and sending
+      const data = {
+        user: {
+          id: user.id,
+        },
+      };
+      let authToken = jwt.sign(data, JWT_SECRET);
+
+      res.json({ authToken });
+    } catch (error) {
+      res.status(500).json({ error: "Internal Server Error" });
     }
   }
 );
