@@ -11,7 +11,7 @@ const port = 5000;
 app.use(express.json());
 
 // * getting routes
-app.use("/auth/", require("./routes/auth"));
+app.use("/auth", require("./routes/auth"));
 app.use("/notes", require("./routes/notes"));
 
 // * server shit

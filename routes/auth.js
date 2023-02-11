@@ -13,12 +13,15 @@ const { body, validationResult } = require("express-validator");
 // * for token
 const jwt = require("jsonwebtoken");
 
+// * importing middleware
+const getUser = require("../middleware/getUser");
+
 const JWT_SECRET = "chiragJaniSecret01";
 
 // * to use router - not sure about this
 const router = express.Router();
 
-// * to register new user in data base (original query used in index.js is "/auth/register")
+// ! to register new user in data base (original query used in index.js is "/auth/register")
 router.post(
   "/register",
   [
@@ -48,7 +51,7 @@ router.post(
           .json({ error: "User with the same email exists" });
       }
 
-      // ! securing the password
+      // ? securing the password
 
       // * generating salt
       const salt = await bcrypt.genSalt(10);
@@ -72,12 +75,13 @@ router.post(
       res.json({ authToken });
       // res.json(user);
     } catch (err) {
-      res.status(500).json({ error: "Internal Server Error" });
+      // res.status(500).json({ error: "Internal Server Error" });
+      console.log(error);
     }
   }
 );
 
-// * to authenticate/login user ("/auth/login")
+// ! to authenticate/login user ("/auth/login")
 router.post(
   "/login",
   [
@@ -117,13 +121,25 @@ router.post(
         },
       };
       let authToken = jwt.sign(data, JWT_SECRET);
-
       res.json({ authToken });
     } catch (error) {
-      res.status(500).json({ error: "Internal Server Error" });
+      // res.status(500).json({ error: "Internal Server Error" });
+      console.log(error);
     }
   }
 );
+
+// ! to get logged in user info
+router.post("/getuser", getUser, async (req, res) => {
+  try {
+    let userId = req.user.id;
+    const user = await User.findById(userId).select("-password");
+    res.json(user);
+  } catch (error) {
+    console.log(error);
+    // res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 // * exporting to use in other files
 module.exports = router;
