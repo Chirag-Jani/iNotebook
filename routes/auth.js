@@ -103,13 +103,18 @@ router.post(
     const { email, password } = req.body;
 
     try {
+      // * getting user from email
       let user = await User.findOne({ email });
+
+      // * authenticating
       if (!user) {
         res.status(400).json({ error: "Invalid Credentials" });
       }
 
+      // * comparing passwords to login
       const passCompare = await bcrypt.compare(password, user.password);
 
+      // * if passwords not match
       if (!passCompare) {
         res.status(400).json({ error: "Invalid Credentials" });
       }
@@ -120,7 +125,11 @@ router.post(
           id: user.id,
         },
       };
+
+      // * signing token
       let authToken = jwt.sign(data, JWT_SECRET);
+
+      // * sending auth token
       res.json({ authToken });
     } catch (error) {
       // res.status(500).json({ error: "Internal Server Error" });
@@ -132,8 +141,13 @@ router.post(
 // ! to get logged in user info
 router.post("/getuser", getUser, async (req, res) => {
   try {
+    // * getting user id which we set in getUser middleware
     let userId = req.user.id;
+
+    // * finding user
     const user = await User.findById(userId).select("-password");
+
+    // * sending user
     res.json(user);
   } catch (error) {
     console.log(error);
