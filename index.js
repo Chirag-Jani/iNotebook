@@ -1,6 +1,9 @@
 // * getting express
 const express = require("express");
 
+// * to make api requests from browser
+const cors = require("cors");
+
 // * to connect to mongodb
 const connectMongo = require("./db");
 
@@ -9,6 +12,9 @@ const port = 5000;
 
 // * to use json
 app.use(express.json());
+
+// * to use cors
+app.use(cors());
 
 // * getting routes
 app.use("/auth", require("./routes/auth"));
